@@ -1534,6 +1534,21 @@ function showAnticipoPop(){
 }
 async function confirmarYWhatsApp(){
   document.getElementById('anticipoModal').classList.add('hidden');
+  try{
+    const iso=toISO(ST.selectedDate);
+    const res=await fetch(`${SCRIPT_URL}?action=citas`);
+    const json=await res.json();
+    if(json.status==='ok'&&json.data){
+      const citasActuales=json.data.filter(c=>c.fechaISO===iso&&c.hora===ST.selectedTime);
+      if(citasActuales.length>0){
+        showToast('⚠️ Este horario ya fue reservado. Por favor elige otro.','err');
+        goStep(2);
+        await loadCitasMes();
+        renderCal();
+        return;
+      }
+    }
+  }catch(e){}
   clearSlotTimer();
   goStep(4);
   await buildConfirm();
