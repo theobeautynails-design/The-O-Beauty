@@ -1204,7 +1204,7 @@ async function loadAdminCitas(){
       const today=toISO(new Date());
       let html='';
       citas.forEach(c=>{
-        const esHoy=c.fechaISO===today;
+        const esHoy=c.fechaISO.split('T')[0]===today;
         const esApertura=c.tipo==='Apertura especial';
         const esBloqueo=c.tipo==='Bloqueo';
         const esWendy=c.tipo==='Wendy';
