@@ -1205,7 +1205,7 @@ async function loadAdminCitas(){
       let html='';
       citas.forEach(c=>{
         const esHoy=c.fechaISO.split('T')[0]===today;
-        const esApertura=c.tipo==='Apertura especial';
+        const esApertura=c.tipo==='Apertura'||c.tipo==='Apertura especial';
         const esBloqueo=c.tipo==='Bloqueo';
         const esWendy=c.tipo==='Wendy';
         const d=new Date(c.fechaISO.split('T')[0]+'T12:00:00');
@@ -1214,7 +1214,7 @@ async function loadAdminCitas(){
           <div class="cita-top">
             <div>
               <div class="cita-fecha">${fl}${esHoy?'<span class="badge-hoy">HOY</span>':''}</div>
-              <div class="cita-hora">${c.hora}${esApertura?' · <span class="badge-apertura">Apertura ✦</span>':''}${esBloqueo?' · <span class="badge-apertura">🚫 Bloqueo</span>':''}${esWendy?' · <span class="badge-apertura" style="background:linear-gradient(135deg,#b39ddb,#9c72c4);color:#fff;">✨ Spa Wendy</span>':''}</div>
+              <div class="cita-hora">${c.hora}${esApertura?' · <span class="badge-apertura">Apertura ✦</span>':''}${esBloqueo?' · <span class="badge-apertura">🚫 Bloqueo</span>':''}${esWendy?' · <span class="badge-apertura" style="background:linear-gradient(135deg,#b39ddb,#9c72c4);color:#fff;">✨ Spa Wendy</span>':''}${esApertura?`<div style="margin-top:6px;font-size:11.5px;color:#b8860b;font-weight:600;" id="timer-${c.id}">⏳ Calculando...</div>`:''}</div>
             </div>
           </div>
           <div class="cita-nombre">👤 ${c.nombre}${c.telefono&&c.telefono!=='—'?' · '+c.telefono:''}</div>
@@ -1239,6 +1239,25 @@ ${!esBloqueo&&!esWendy&&c.telefono&&c.telefono!=='-'?`
   <a style="background:#25D366;color:#fff;border:none;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;" href="https://wa.me/52${String(c.telefono||'').replace(/\D/g,'')}?text=${encodeURIComponent(`🌸 *¡Tu cita está confirmada, ${c.nombre}!* 🌸\n\n📅 *Fecha:* ${c.fechaISO}\n⏰ *Hora:* ${c.hora}\n💅 *Servicio:* ${c.servicio}\n✨ *Técnica:* ${c.tecnica}\n\n📍 *The Õ Beauty*\nhttps://maps.app.goo.gl/oBYRZgvjU2NBCTaJA\n\n⚠️ *Recuerda:*\n• Llega 5 min antes ⏱️\n• Si necesitas cancelar, avísanos con 24 hrs 🙏\n• Tu depósito asegura tu lugar 💛\n\n¡Te esperamos! 🤍✨`)}" target="_blank">💬 Enviar confirmación</a>
   ${c.estado!=='Pendiente'?`<a style="background:#FF6B35;color:#fff;border:none;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;" href="https://wa.me/52${String(c.telefono||'').replace(/\D/g,'')}?text=${encodeURIComponent(`⏰ *¡Hola ${c.nombre}!*\n\nTe recordamos que tu cita es *hoy*:\n\n🕐 *${c.hora}* — ¡Ya casi!\n💅 *${c.servicio}*\n\n📍 The Õ Beauty\nhttps://maps.app.goo.gl/oBYRZgvjU2NBCTaJA\n\n¡Te esperamos! 🌸`)}" target="_blank">⏰ Recordatorio 1.5hrs</a>`:''}
 </div>
+if(esApertura){
+  const horaLimpia=(c.hora||'').replace(/\(.*\)/,'').trim();
+  const partes=horaLimpia.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if(partes){
+    let hh=parseInt(partes[1]);const mm=parseInt(partes[2]);const mer=partes[3].toUpperCase();
+    if(mer==='PM'&&hh!==12)hh+=12;else if(mer==='AM'&&hh===12)hh=0;
+    const citaDate=new Date(c.fechaISO.split('T')[0]+'T'+String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')+':00');
+    setInterval(()=>{
+      const el=document.getElementById('timer-'+c.id);
+      if(!el)return;
+      const diff=citaDate-new Date();
+      if(diff<=0){el.textContent='🔔 ¡Ya es momento de confirmar por WhatsApp!';el.style.color='#c0392b';return;}
+      const d=Math.floor(diff/86400000);
+      const h=Math.floor((diff%86400000)/3600000);
+      const m=Math.floor((diff%3600000)/60000);
+      el.textContent='⏳ Faltan '+(d>0?d+'d ':'')+h+'h '+m+'m para la cita';
+    },1000);
+  }
+}
 `:''}
         </div>`;
       });
