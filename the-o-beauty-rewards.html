@@ -761,9 +761,7 @@ function updateProgress(amt) {
   document.getElementById('progBarFill').style.width = pct + '%';
   document.getElementById('progMin').textContent = '$' + level.min;
   document.getElementById('progMax').textContent = '$' + level.max;
-  document.getElementById('progNext').textContent = level.next
-    ? `Te faltan $${Math.max(0, level.max - amt).toFixed(0)} para alcanzar nivel ${level.next} ✨`
-    : '¡Eres VIP! Nivel máximo alcanzado 👑';
+  document.getElementById('progNext').style.display = 'none';
 }
 
 function renderVisits(visits) {
