@@ -1010,8 +1010,8 @@ function horaAMin(h){
 // Ventanas de bloqueo según turno fijo:
 // 11:00 AM → bloquea hasta 2:30 PM (210 min después)
 // 2:30 PM  → bloquea hasta 5:00 PM (150 min después)
-// 5:00 PM  → bloquea hasta 7:00 PM (120 min después, fin de jornada)
-// Cualquier otro horario (flexible/VIP/bloqueo manual) → 2 horas (120 min)
+// 5:00 PM  → bloquea hasta 7:00 PM (150 min después, fin de jornada)
+// Cualquier otro horario (flexible/VIP/bloqueo manual) → 2 horas (150 min)
 const VENTANAS_FIJAS={
   '11:00 AM': 210, // hasta 2:30 PM
   '2:30 PM':  150, // hasta 5:00 PM
@@ -1078,6 +1078,7 @@ async function pickDay(y,m,d,el){
 
 function pickSlotFromCustom(time){
   ST.selectedTime=time;
+  ST.selectedSlotMin = null;
   document.getElementById('customBox').classList.remove('open');
   document.getElementById('vipBox').classList.remove('open');
   // Marcar el botón custom slot como selected
@@ -1086,26 +1087,30 @@ function pickSlotFromCustom(time){
   document.getElementById('btnToSurvey').disabled=false;
   startSlotTimer();
 }
-function pickSlot(time,id){ST.selectedTime=time;document.querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('selected'));document.getElementById(id).classList.add('selected');document.getElementById('customBox').classList.remove('open');document.getElementById('vipBox').classList.remove('open');document.getElementById('btnToSurvey').disabled=false;startSlotTimer();}
+function pickSlot(time,id){ST.selectedTime=time;ST.selectedSlotMin = horaAMin(time);document.querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('selected'));document.getElementById(id).classList.add('selected');document.getElementById('customBox').classList.remove('open');document.getElementById('vipBox').classList.remove('open');document.getElementById('btnToSurvey').disabled=false;startSlotTimer();}
 function pickHoraApertura(hora,id){ST.selectedTime=hora+' (apertura especial — pendiente de confirmación)';ST.isAperturaPendiente=true;document.querySelectorAll('.hora-btn').forEach(b=>b.classList.remove('selected'));document.getElementById(id).classList.add('selected');document.getElementById('btnToSurvey').disabled=false;startSlotTimer();}
 function pickCustom(){
   ST.selectedTime=null;
   document.querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('selected'));
   document.getElementById('vipBox').classList.remove('open');
   // Actualizar botones de hora flexible según bloqueos
-  const mb=ST.minBloqueados||new Set();
-  document.querySelectorAll('#customBox .hora-btn').forEach(btn=>{
-    const h=btn.textContent.replace('🔒','').trim();
-    if(estaHoraBloqueada(h,mb)){
-      btn.disabled=true;
-      btn.classList.add('taken');
-      btn.innerHTML=h+'<br><small>🔒</small>';
-    } else {
-      btn.disabled=false;
-      btn.classList.remove('taken');
-      btn.textContent=h;
-    }
-  });
+  const mb = ST.minBloqueados || new Set();
+document.querySelectorAll('#customBox .hora-btn').forEach(btn => {
+  const h = btn.textContent.replace('🔒','').trim();
+  const minBtn = horaAMin(h);
+  const bloqPorCitas = estaHoraBloqueada(h, mb);
+  const bloqPorSlot = ST.selectedSlotMin != null &&
+                      minBtn >= ST.selectedSlotMin && minBtn < ST.selectedSlotMin + 150
+  if(bloqPorCitas || bloqPorSlot){
+    btn.disabled = true;
+    btn.classList.add('taken');
+    btn.innerHTML = h + '<br><small>🔒</small>';
+  } else {
+    btn.disabled = false;
+    btn.classList.remove('taken');
+    btn.textContent = h;
+  }
+});
   document.getElementById('customBox').classList.add('open');
   document.getElementById('btnToSurvey').disabled=true;
 }
