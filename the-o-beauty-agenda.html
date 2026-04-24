@@ -719,6 +719,7 @@ select.form-input{cursor:pointer;}
           <div style="font-size:13px;color:var(--text-light);" id="adminCitasCount">Cargando...</div>
           <button class="btn-xs btn-edit" onclick="loadAdminCitas()">↻ Actualizar</button>
         </div>
+        <button class="btn-admin" onclick="openModalNuevaCita()">+ Nueva cita</button>
         <div id="adminCitasList"></div>
       </div>
       <div id="tabBloquear" class="hidden">
@@ -815,7 +816,32 @@ select.form-input{cursor:pointer;}
     <div class="form-group">
       <label class="form-label">Nueva fecha</label>
       <input class="form-input" id="editFecha" type="date">
+    </div><!-- cierre modalEdit -->
+<div id="modalNueva" class="modal-bg hidden">
+  <div class="modal-backdrop" onclick="closeModalNueva()"></div>
+  <div class="modal-box">
+    <h3>Nueva cita</h3>
+    <label>Nombre</label>
+    <input id="nuevaNombre" type="text" placeholder="Nombre de la cliente">
+    <label>Teléfono</label>
+    <input id="nuevaTelefono" type="tel" placeholder="55XXXXXXXX">
+    <label>Fecha</label>
+    <input id="nuevaFecha" type="date">
+    <label>Hora</label>
+    <input id="nuevaHora" type="text" placeholder="Ej: 2:30 PM">
+    <label>Servicio</label>
+    <select id="nuevaServicio">
+      <option>Manicure</option>
+      <option>Pedicure</option>
+      <option>Manicure y Pedicure</option>
+      <option>Ninguno</option>
+    </select>
+    <div class="modal-btns">
+      <button onclick="closeModalNueva()">Cancelar</button>
+      <button onclick="saveNuevaCita()">Guardar</button>
     </div>
+  </div>
+</div>
     <div class="form-group">
       <label class="form-label">Nueva hora</label>
       <select class="form-input" id="editHora">
@@ -1301,6 +1327,34 @@ function openEdit(id,fecha,hora){
   document.getElementById('editFecha').value=fecha;
   document.getElementById('editHora').value=hora;
   document.getElementById('modalEdit').classList.remove('hidden');
+}
+  function openModalNuevaCita(){
+  document.getElementById('modalNueva').classList.remove('hidden');
+}
+function closeModalNueva(){
+  document.getElementById('modalNueva').classList.add('hidden');
+}
+async function saveNuevaCita(){
+  const nombre   = document.getElementById('nuevaNombre').value.trim();
+  const telefono = document.getElementById('nuevaTelefono').value.trim();
+  const fecha    = document.getElementById('nuevaFecha').value;
+  const hora     = document.getElementById('nuevaHora').value.trim();
+  const servicio = document.getElementById('nuevaServicio').value;
+  if(!nombre || !fecha || !hora){ showToast('Faltan datos','err'); return; }
+  try{
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        action:'guardarCita',
+        nombre, telefono, fechaISO: fecha, hora, servicio,
+        tecnica:'', retiro:'No', diseno:'Liso', tipo:'Normal'
+      })
+    });
+    showToast('Cita guardada ✓');
+    closeModalNueva();
+    await loadCitasMes();
+    renderCal();
+    loadAdminCitas();
+  }catch(e){ showToast('Error al guardar','err'); }
 }
 function closeModal(){document.getElementById('modalEdit').classList.add('hidden');}
 async function saveEdit(){
