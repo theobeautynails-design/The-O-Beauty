@@ -1178,7 +1178,7 @@ async function pickDay(y,m,d,el){
       const c=citasDelDia.find(x=>horaAMin(x.hora)<=horaAMin(s.time)&&horaAMin(s.time)<horaAMin(x.hora)+120);
       return `<button class="slot-btn${tomada?' taken':''}" id="${s.id}" onclick="${tomada?'':'pickSlot(\''+s.time+'\',\''+s.id+'\')'}" ${tomada?'disabled':''}><div class="slot-icon">${s.icon}</div><div><span class="slot-time">${s.time}</span><span class="slot-note">${s.note}</span>${tomada?'<span class="slot-taken-label">🌸 Este horario ya tiene dueña</span>':''}</div></button>`;
     }).join('');
-    html+=`<button class="slot-btn custom-slot" id="btnCustomSlot" onclick="if(!vipTriggered)pickCustom()" onmousedown="startVipTimer()" onmouseup="cancelVipTimer()" onmouseleave="cancelVipTimer()" ontouchstart="startVipTimer(event)" ontouchend="cancelVipTimer(event)" ontouchcancel="cancelVipTimer(event)" ><div class="slot-icon">✨</div><div><span class="slot-time">Horario flexible 🌸</span><span class="slot-note">Contáctame si ninguno te queda</span></div></button>`;
+   html+=`<button class="slot-btn custom-slot" id="btnCustomSlot" onclick="startVipTimer()" ontouchstart="startVipTimer(event)" ontouchend="cancelVipTimer(event)" ontouchcancel="cancelVipTimer(event)"><div class="slot-icon">✨</div><div><span class="slot-time">Horario flexible 🌸</span><span class="slot-note">Contáctame si ninguno te queda</span></div></button>`;
   }
   // Guardar minBloqueados en ST para usarlo en customBox y vipBox
   ST.minBloqueados=minBloqueados;
@@ -1664,18 +1664,24 @@ async function buscarHistorial(){
     }
   }catch(e){document.getElementById('historialList').innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div><p>Error al buscar</p></div>';}
 }
-// VIP secreto: long press 2 seg en botón Horario flexible
-let vipTimer=null;
+// VIP secreto: 3 clicks rápidos en botón Horario flexible
+let vipClicks=0;
+let vipClickTimer=null;
 let vipTriggered=false;
+
 function startVipTimer(e){
-  vipTriggered=false;
-  vipTimer=setTimeout(()=>{vipTimer=null;vipTriggered=true;openVip();},2000);
-}
-function cancelVipTimer(e){
-  if(vipTimer){clearTimeout(vipTimer);vipTimer=null;
-    // En touchend sin longpress activado → ejecutar pickCustom manualmente
-    if(e&&e.type==='touchend'&&!vipTriggered){pickCustom();}
+  vipClicks++;
+  if(vipClickTimer) clearTimeout(vipClickTimer);
+  vipClickTimer=setTimeout(()=>{vipClicks=0;},600);
+  if(vipClicks>=3){
+    vipClicks=0;
+    vipTriggered=true;
+    openVip();
   }
+}
+
+function cancelVipTimer(e){
+  if(e&&e.type==='touchend'&&!vipTriggered){pickCustom();}
   vipTriggered=false;
 }
 
