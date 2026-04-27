@@ -1178,7 +1178,7 @@ async function pickDay(y,m,d,el){
       const c=citasDelDia.find(x=>horaAMin(x.hora)<=horaAMin(s.time)&&horaAMin(s.time)<horaAMin(x.hora)+120);
       return `<button class="slot-btn${tomada?' taken':''}" id="${s.id}" onclick="${tomada?'':'pickSlot(\''+s.time+'\',\''+s.id+'\')'}" ${tomada?'disabled':''}><div class="slot-icon">${s.icon}</div><div><span class="slot-time">${s.time}</span><span class="slot-note">${s.note}</span>${tomada?'<span class="slot-taken-label">🌸 Este horario ya tiene dueña</span>':''}</div></button>`;
     }).join('');
-   html+=`<button class="slot-btn custom-slot" id="btnCustomSlot" onclick="startVipTimer()" ontouchstart="startVipTimer(event)" ontouchend="cancelVipTimer(event)" ontouchcancel="cancelVipTimer(event)"><div class="slot-icon">✨</div><div><span class="slot-time">Horario flexible 🌸</span><span class="slot-note">Contáctame si ninguno te queda</span></div></button>`;
+   html+=`<button class="slot-btn custom-slot" id="btnCustomSlot" onclick="handleCustomClick()" ontouchstart="startVipTimer(event)" ontouchend="cancelVipTimer(event)" ontouchcancel="cancelVipTimer(event)"><div class="slot-icon">✨</div><div><span class="slot-time">Horario flexible 🌸</span><span class="slot-note">Contáctame si ninguno te queda</span></div></button>`;
   }
   // Guardar minBloqueados en ST para usarlo en customBox y vipBox
   ST.minBloqueados=minBloqueados;
@@ -1678,6 +1678,11 @@ function startVipTimer(e){
     vipTriggered=true;
     openVip();
   }
+ } 
+  function handleCustomClick(){
+  if(!vipTriggered) pickCustom();
+  vipTriggered=false;
+
 }
 
 function cancelVipTimer(e){
