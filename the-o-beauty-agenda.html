@@ -1489,15 +1489,18 @@ async function saveNuevaCita(){
   const nombre   = document.getElementById('nuevaNombre').value.trim();
   const telefono = document.getElementById('nuevaTelefono').value.trim();
   const fecha    = document.getElementById('nuevaFecha').value;
-  const hora     = document.getElementById('nuevaHora').value.trim();
+  const hora     = document.getElementById('nuevaHora').value;
   const servicio = document.getElementById('nuevaServicio').value;
+  const tecnica  = document.getElementById('nuevaTecnica').value;
+  const retiro   = document.getElementById('nuevaRetiro').value;
+  const diseno   = document.getElementById('nuevaDiseno').value;
   if(!nombre || !fecha || !hora){ showToast('Faltan datos','err'); return; }
   try{
     await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         action:'guardarCita',
         nombre, telefono, fechaISO: fecha, hora, servicio,
-        tecnica:'', retiro:'No', diseno:'Liso', tipo:'Normal'
+        tecnica, retiro, diseno, tipo:'Normal'
       })
     });
     showToast('Cita guardada ✓');
